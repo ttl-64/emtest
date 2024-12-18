@@ -1,0 +1,9 @@
+server_name: localhost
+dock_comp_file: docker-compose.yml
+docker_file: Dockerfile
+default_dest_dir: /home/vagrant/
+config_files: /home/vagrant/etc
+index_php: index.php
+index_html: index.html
+env: .env
+mysql_data: mysql-data

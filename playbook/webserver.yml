@@ -1,0 +1,7 @@
+---
+- name: Configure web-server (with nginx, php, mysql) with docker-compose on the remote server
+  hosts: production
+  become: true
+  roles:
+    - role: webservers
+...

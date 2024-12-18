@@ -1,0 +1,4 @@
+- name: Reload nginx config in docker
+  ansible.builtin.shell:
+    cmd: docker exec nginx /usr/sbin/nginx -s reload
+

@@ -1,0 +1,65 @@
+- name: check if docker is installed or install it if not
+  include_tasks: "{{ ansible_distribution | lower }}.yml"
+
+- name: add "vagrant" user to "docker" group
+  user:
+    name: vagrant
+    groups: docker
+    append: true
+
+- name: check if docker is active
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: copy project files to default destination dir
+  copy:
+    src: "{{ item }}"
+    dest: "{{ default_dest_dir }}{{ item }}"
+  loop:
+    - "{{ dock_comp_file }}"
+    - "{{ docker_file }}"
+    - "{{ env }}"
+
+- name: creating config folder
+  file:
+    path: "{{ config_files }}"
+    state: directory
+    owner: vagrant
+
+- name: creating db folder
+  file:
+    path: "{{ config_files }}/{{ mysql_data }}"
+    state: directory
+    owner: vagrant
+
+- name: build container "php82fpm" image
+  docker_image:
+    name: php82fpm:latest
+    source: build
+    build:
+      path: "{{ default_dest_dir }}"
+    state: present
+
+- name: copy nginx config file
+  template:
+    src: nginx.conf.j2
+    dest: "{{ config_files }}/nginx.conf"
+    mode: '0644'
+  notify:
+    - Restart nginx service in docker
+
+- name: copy web-project files to default destination dir
+  copy:
+    src: "{{ item }}"
+    dest: "{{ config_files }}/"
+  loop:
+    - "{{ index_php }}"
+    - "{{ index_html }}"
+
+- name: deploy docker-compose stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ default_dest_dir }}"
+    files:
+      - docker-compose.yml
